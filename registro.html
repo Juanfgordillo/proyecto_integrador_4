@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro - Foodgo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="register-container">
+    <h3 class="text-center text-success fw-bold mb-4">Crear una cuenta</h3>
+
+    <form id="registroForm">
+      <div class="mb-3">
+        <label for="cedula" class="form-label">Número de cédula</label>
+        <input type="text" class="form-control" id="cedula" placeholder="Ingresa tu cédula" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="nombre" placeholder="Ingresa tu nombre" required>
+      </div>
+    
+      <div class="mb-3">
+        <label for="apellido" class="form-label">Apellido</label>
+        <input type="text" class="form-control" id="apellido" placeholder="Ingresa tu apellido" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="municipio" class="form-label">Municipio</label>
+        <input type="text" class="form-control" id="municipio" placeholder="Ingresa el nombre del municipio" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="numero" class="form-label">Número de vivienda</label>
+        <input type="text" class="form-control" id="numero" placeholder="Número de vivienda" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="calle" class="form-label">Calle</label>
+        <input type="text" class="form-control" id="calle" placeholder="Calle" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="telefono1" class="form-label">Teléfono 1</label>
+        <input type="tel" class="form-control" id="telefono1" placeholder="Ingresa tu primer número de teléfono" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="telefono2" class="form-label">Teléfono 2</label>
+        <input type="tel" class="form-control" id="telefono2" placeholder="Ingresa tu segundo número de teléfono" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <input type="password" class="form-control" id="password" placeholder="Contraseña" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirmar contraseña" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="rol" class="form-label">Rol</label>
+        <select id="rol" class="form-select" required>
+          <option value="">Selecciona un rol</option>
+          <option value="1">Cliente</option>
+          <option value="2">Repartidor</option>
+          <option value="3">Administrador</option>
+        </select>
+      </div>
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success fw-bold">Registrarse</button>
+      </div>
+    </form>
+
+    <p class="text-center mt-3 mb-0">
+      ¿Ya tienes una cuenta? 
+      <a href="login.html" class="text-success fw-bold text-decoration-none">Inicia sesión</a>
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.querySelector('#registroForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('Las contraseñas no coinciden');
+        return;
+      }
+
+      const data = {
+        cedula: document.getElementById('cedula').value.trim(),
+        nombre: document.getElementById('nombre').value.trim(),
+        apellido: document.getElementById('apellido').value.trim(),
+        municipio: document.getElementById('municipio').value.trim(),
+        numero: document.getElementById('numero').value.trim(),
+        calle: document.getElementById('calle').value.trim(),
+        telefono1: document.getElementById('telefono1').value.trim(),
+        telefono2: document.getElementById('telefono2').value.trim(),
+        password: password,
+        rol: parseInt(document.getElementById('rol').value)
+      };
+
+      try {
+        const res = await fetch('http://localhost:3000/registro', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        alert(result.message || result.error);
+      } catch (err) {
+        console.error(err);
+        alert('Error al conectar con el servidor');
+      }
+    });
+  </script>
+</body>
+</html>

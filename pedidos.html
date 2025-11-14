@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoodGo - Pedidos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body { background-color:#f8f9fa; font-family:'Segoe UI', Tahoma; }
+    .navbar-brand { color:#28a745 !important; font-weight:bold; font-size:1.8rem; }
+    .card { border:none; border-radius:15px; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+    .cart-sidebar { background:white; border-radius:15px; padding:20px; position:sticky; top:20px; }
+  </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">🍔 FoodGo</a>
+    <span id="nombreUsuario" class="fw-bold text-success"></span>
+    <button class="btn btn-outline-success ms-3" id="logoutBtn">Cerrar Sesión</button>
+  </div>
+</nav>
+
+<div class="container my-4">
+  <div class="row">
+    <div class="col-lg-8">
+      <h3 class="fw-bold mb-3">Menú (<span id="productCount">0</span>)</h3>
+      <div class="row" id="productosContainer"></div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="cart-sidebar">
+        <h4 class="fw-bold text-center mb-3">🛒 Tu Pedido</h4>
+        <div id="cartItems" class="mb-3 text-center text-muted">
+          <i class="fs-1">🛒</i><p>Tu carrito está vacío</p>
+        </div>
+
+        <label class="fw-semibold">📍 Departamento</label>
+        <select id="departamento" class="form-select mb-3">
+          <option value="">Seleccione un departamento</option>
+        </select>
+
+        <div id="municipioContainer" style="display:none;">
+          <label class="fw-semibold">🏙️ Municipio</label>
+          <select id="municipio" class="form-select mb-3">
+            <option value="">Seleccione un municipio</option>
+          </select>
+        </div>
+
+        <div id="tiendaContainer" style="display:none;">
+          <label class="fw-semibold">🏪 Tienda</label>
+          <select id="tienda" class="form-select mb-3">
+            <option value="">Seleccione una tienda</option>
+          </select>
+        </div>
+
+        <div class="alert alert-secondary p-2">
+          El pedido se entregará en la dirección registrada
+        </div>
+
+        <div class="border-top pt-3 mb-3">
+          <div class="d-flex justify-content-between">
+            <span class="fw-bold fs-5">Total:</span>
+            <span class="fw-bold fs-4 text-success" id="cartTotal">$0.00</span>
+          </div>
+        </div>
+
+        <button id="placeOrder" class="btn btn-success w-100 py-2 fs-5" disabled>
+          🚀 Realizar Pedido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let cart = [];
+let usuario = null;
+
+async function loadSession() {
+  const res = await fetch("/session", { credentials: "include" });
+  const data = await res.json();
+
+  if (!data.loggedIn) return location.href = "/login.html";
+
+  usuario = data.user;
+  nombreUsuario.textContent = usuario.nombre;
+
+  const dirElem = document.getElementById("direccionMostrar");
+  if (dirElem) {
+    dirElem.textContent = usuario.direccion || "No hay dirección registrada";
+  }
+}
+
+logoutBtn.onclick = async () => {
+  await fetch("/api/logout", { method: "POST", credentials: "include" });
+  location.href = "/login.html";
+};
+
+function renderProductos(productos) {
+  const contenedor = document.getElementById("productosContainer");
+
+  contenedor.innerHTML = productos.map(p => `
+    <div class="col-md-4 mb-3">
+      <div class="card p-2 text-center">
+        <img src="${p.imagen}" class="card-img-top" style="height:140px; object-fit:cover;">
+        <div class="card-body">
+          <h5 class="card-title">${p.nombre}</h5>
+          <p class="card-text text-success fw-bold">$${Number(p.precio).toFixed(2)}</p>
+          <button class="btn btn-success w-100"
+            onclick="addToCart('${p.id_producto}', '${p.nombre}', ${Number(p.precio)})">
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  productCount.textContent = productos.length;
+}
+
+async function loadProductos() {
+  const res = await fetch("/api/productos");
+  renderProductos(await res.json());
+}
+
+function addToCart(id, name, price) {
+  const item = cart.find(i => i.id === id);
+  if (item) item.quantity++;
+  else cart.push({ id, name, price, quantity: 1 });
+
+  updateCart();
+  validarListoParaOrdenar();
+}
+
+function updateCart() {
+  if (cart.length === 0) {
+    cartItems.innerHTML = `<i class="fs-1">🛒</i><p>Tu carrito está vacío</p>`;
+    placeOrder.disabled = true;
+    return;
+  }
+
+  cartItems.innerHTML = cart.map(i =>
+    `${i.name} x${i.quantity} - $${(i.price * i.quantity).toFixed(2)}<br>`
+  ).join('');
+
+  const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  cartTotal.textContent = `$${total.toFixed(2)}`;
+
+  validarListoParaOrdenar();
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const res = await fetch("/departamentos");
+  const data = await res.json();
+
+  data.forEach(d => departamento.insertAdjacentHTML("beforeend",
+    `<option value="${d.id_departamento}">${d.nombre}</option>`
+  ));
+
+  await loadSession();
+  await loadProductos();
+});
+
+departamento.addEventListener("change", async () => {
+  municipio.innerHTML = "<option value=''>Seleccione un municipio</option>";
+  tienda.innerHTML = "<option value=''>Seleccione una tienda</option>";
+  municipioContainer.style.display = "none";
+  tiendaContainer.style.display = "none";
+
+  if (!departamento.value) return;
+
+  const res = await fetch(`/municipios/${departamento.value}`);
+  const data = await res.json();
+
+  data.forEach(m => municipio.insertAdjacentHTML("beforeend",
+    `<option value="${m.id_municipio}">${m.nombre}</option>`
+  ));
+
+  municipioContainer.style.display = "block";
+});
+
+municipio.addEventListener("change", async () => {
+  tienda.innerHTML = "<option value=''>Seleccione una tienda</option>";
+  tiendaContainer.style.display = "none";
+
+  if (!municipio.value) return;
+
+  try {
+    const res = await fetch(`/api/tiendas/municipio/${municipio.value}`);
+    const data = await res.json();
+
+    data.forEach(t => tienda.insertAdjacentHTML("beforeend",
+      `<option value="${t.id_tienda}">${t.nombre}</option>`
+    ));
+
+    tiendaContainer.style.display = "block";
+  } catch (err) {
+    console.error("Error cargando tiendas:", err);
+  }
+});
+
+function validarListoParaOrdenar() {
+  const ok =
+    cart.length > 0 &&
+    departamento.value &&
+    municipio.value &&
+    tienda.value;
+
+  document.getElementById("placeOrder").disabled = !ok;
+}
+
+async function realizarPedido() {
+    const tiendaSelect = document.getElementById("tienda");
+
+    if (!tiendaSelect) {
+        alert("Seleccione una tienda antes de realizar el pedido");
+        return;
+    }
+
+    const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+    const fecha = new Date();
+    const fechaEntrega = fecha.toISOString().split("T")[0]; 
+    const horaEntrega = fecha.toTimeString().split(" ")[0];  
+
+    const pedido = {
+        id_tienda: tiendaSelect.value,
+        fecha_entrega: fechaEntrega,
+        hora_entrega: horaEntrega,
+        precio_total: total
+    };
+
+    console.log("Pedido a enviar:", pedido);
+
+    const res = await fetch("/pedidos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(pedido)
+    });
+
+    const data = await res.json();
+    console.log("Respuesta del servidor:", data);
+
+    if (res.ok) {
+        alert("✅ Pedido realizado con éxito");
+        cart = [];
+        updateCart();
+    } else {
+        alert("❌ Error al crear el pedido");
+    }
+}
+
+placeOrder.addEventListener("click", realizarPedido);
+</script>
+
+</body>
+</html>

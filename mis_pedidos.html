@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <title>Mis pedidos</title>
+</head>
+<body class="p-4">
+
+<h3 class="text-success fw-bold mb-4">Mis pedidos</h3>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID Pedido</th>
+      <th>Precio Total</th>
+      <th>Fecha y Hora</th>
+      <th>Tienda</th>
+      <th>Repartidor</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody id="tablaPedidosCliente"></tbody>
+</table>
+
+<script>
+async function cargarPedidos() {
+  try {
+    const res = await fetch("/pedidos/cliente", { credentials: "include" });
+    const pedidos = await res.json();
+
+    const tbody = document.getElementById("tablaPedidosCliente");
+    tbody.innerHTML = "";
+
+    if (pedidos.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No tienes pedidos</td></tr>`;
+      return;
+    }
+
+    pedidos.forEach(p => {
+      const fechaHora = `${new Date(p.fecha_entrega).toLocaleDateString()} ${p.hora_entrega || "-"}`;
+      const botones = p.estado === "pendiente" ? `
+        <button onclick="modificar(${p.id_pedido})" class="btn btn-warning btn-sm me-1">Modificar</button>
+        <button onclick="cancelar(${p.id_pedido})" class="btn btn-danger btn-sm">Cancelar</button>
+      ` : "";
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${p.id_pedido}</td>
+          <td>$${Number(p.precio_total).toFixed(2)}</td>
+          <td>${fechaHora}</td>
+          <td>${p.tienda}</td>
+          <td>${p.repartidor ?? "SIN ASIGNAR"}</td>
+          <td>${botones}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error("Error al cargar pedidos:", err);
+  }
+}
+
+async function cancelar(id) {
+  await fetch(`/pedidos/cancelar/${id}`, { method: "PUT", credentials: "include" });
+  cargarPedidos();
+}
+
+async function modificar(id) {
+  const nuevaHora = prompt("Nueva hora (HH:MM):");
+  if (!nuevaHora) return;
+
+  await fetch(`/pedidos/modificar/${id}`, {
+    method: "PUT",
+    headers: {"Content-Type":"application/json"},
+    credentials: "include",
+    body: JSON.stringify({ nuevaHora })
+  });
+  cargarPedidos();
+}
+
+cargarPedidos();
+</script>
+
+</body>
+</html>

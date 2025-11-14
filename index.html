@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+
+    <title>FoodGo - Página principal</title>
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+
+        <a class="navbar-brand d-flex align-items-center" href="#">
+          <img src="imagenes/FoodGo_logo.png" alt="Logo" class="logo-navbar me-2">
+          <span class="fw-bold text-success">FoodGo</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+          aria-controls="mainNav" aria-expanded="false" aria-label="Alternar navegación">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+          <form class="d-flex ms-3 me-auto" role="search" style="max-width:600px; width:100%;">
+            <input class="form-control me-2" type="search" placeholder="Buscar un restaurante" aria-label="Buscar">
+          </form>
+
+          <div class="d-flex align-items-center gap-2">
+            <a href="pedidos.html" class="btn btn-primary d-flex align-items-center">
+              <i class="bi bi-basket2 me-2"></i> Pedidos
+            </a>
+              <div class="dropdown">
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                  <li><a class="dropdown-item" href="perfil.php">Perfil</a></li>
+                  <li><a class="dropdown-item" href="mis_pedidos.html">Mis pedidos</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger" href="logout.php">Cerrar sesión</a></li>
+                </ul>
+              </div>
+              
+              <a href="login.html" class="btn btn-outline-secondary d-flex align-items-center">
+                <i class="bi bi-person-circle me-2"></i> Iniciar
+              </a>
+
+            <a href="mis_pedidos.html" class="btn btn-outline-secondary d-flex align-items-center">
+              <i class="bi bi-cart"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <section class="hero d-flex flex-column align-items-center justify-content-center text-center text-white">
+      <div class="container">
+        <h1 class="fw-bold mb-4">
+          Pide tu <span class="fw-bolder">comida</span> en cualquier lugar y momento.
+        </h1>
+
+        <div class="input-group mb-3 shadow" style="max-width: 600px; margin: 0 auto;">
+          <span class="input-group-text bg-white">
+            <i class="bi bi-geo-alt-fill text-muted"></i>
+          </span>
+          <input type="text" class="form-control" placeholder="¿Dónde quieres recibir tu compra?" />
+        </div>
+
+          <div class="d-flex justify-content-center gap-4 mt-3">
+            <a href="login.html" class="text-white text-decoration-none">
+              <span class="fw-bold">Iniciar sesión</span> para ver tus direcciones y pedidos recientes
+            </a>
+          </div>
+      </div>
+    </section>
+
+    
+    <footer class="container-fluid bg-dark py-4 mt-5">
+      <div class="row align-items-start text-center text-md-start">
+        <div class="col-md-3 mb-4 mb-md-0 d-flex justify-content-center justify-content-md-start gap-3">
+          <a href="#"><i class="bi bi-facebook fs-4 text-light"></i></a>
+          <a href="#"><i class="bi bi-twitter fs-4 text-light"></i></a>
+          <a href="#"><i class="bi bi-instagram fs-4 text-light"></i></a>
+        </div>
+
+        <div class="col-md-5 mb-4 mb-md-0 text-light">
+          <h6 class="fw-bold mb-3">Contáctanos</h6>
+          <p class="mb-1"><i class="bi bi-geo-alt-fill me-2"></i> Calle 10 #15-23, Tuluá, Valle del Cauca</p>
+          <p class="mb-1"><i class="bi bi-envelope-fill me-2"></i> contacto@foodgo.com</p>
+          <p class="mb-0"><i class="bi bi-telephone-fill me-2"></i> +57 312 345 6789</p>
+        </div>
+
+        <div class="col-md-4 mb-3 mb-md-0 d-flex flex-column flex-md-row justify-content-center justify-content-md-end gap-2">
+          <a href="#" class="btn btn-outline-light px-3">
+            <i class="bi bi-apple"></i> App Store
+          </a>
+          <a href="#" class="btn btn-outline-light px-3">
+            <i class="bi bi-google-play"></i> Google Play
+          </a>
+          <a href="#" class="btn btn-outline-light px-3">
+            <i class="bi bi-phone"></i> AppGallery
+          </a>
+        </div>
+      </div>
+
+      <hr class="border-light my-3">
+      <div class="row">
+        <div class="col text-center">
+          <small class="text-light">© 2025 FoodGo. Todos los derechos reservados.</small>
+        </div>
+      </div>
+    </footer>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const res = await fetch("/check-session", {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    const loginBtn = document.querySelector('a[href="login.html"]');
+    const dropdownMenu = document.querySelector(".dropdown");
+
+    if (data.loggedIn) {
+      dropdownMenu.innerHTML = `
+        <button class="btn btn-outline-secondary d-flex align-items-center dropdown-toggle" 
+                id="userMenu" data-bs-toggle="dropdown">
+          <i class="bi bi-person-circle me-2"></i> ${data.user.nombre}
+        </button>
+
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="perfil.html">Perfil</a></li>
+          <li><a class="dropdown-item" href="pedidos.html">Mis pedidos</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" id="logoutBtn" href="#">Cerrar sesión</a></li>
+        </ul>
+      `;
+
+      if (loginBtn) loginBtn.remove();
+
+      document.getElementById("logoutBtn").addEventListener("click", async () => {
+        await fetch("/logout", { method: "GET", credentials: "include" });
+        window.location.href = "login.html";
+      });
+
+    } else {
+      dropdownMenu.remove();
+    }
+
+  } catch (err) {
+    console.log("Error verificando sesión:", err);
+  }
+});
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

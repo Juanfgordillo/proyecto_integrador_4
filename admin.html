@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel del Administrador | FoodGo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+  <header class="d-flex justify-content-between align-items-center shadow-sm p-2">
+    <div class="d-flex align-items-center">
+      <img src="imagenes/FoodGo_logo.png" alt="FoodGo" height="40" class="me-2">
+      <h4 class="m-0 fw-bold">FoodGo - Panel del Administrador</h4>
+    </div>
+    <a href="index.html" class="btn btn-outline-dark">
+      <i class="bi bi-house-door me-1"></i> Volver al inicio
+    </a>
+  </header>
+
+  <main class="container-fluid mt-3">
+    <div class="row">
+      <div class="col-md-3 col-lg-2 mb-3 vh-100 pt-3">
+        <div class="list-group shadow-sm">
+          <button class="list-group-item list-group-item-action active" data-seccion="repartidores">
+            <i class="bi bi-bicycle me-2"></i> Repartidores
+          </button>
+          <button class="list-group-item list-group-item-action" data-seccion="tiendas">
+            <i class="bi bi-shop me-2"></i> Tiendas
+          </button>
+          <button class="list-group-item list-group-item-action" data-seccion="productos">
+            <i class="bi bi-bag me-2"></i> Productos
+          </button>
+          <button class="list-group-item list-group-item-action" data-seccion="pedidos">
+            <i class="bi bi-cart3 me-2"></i> Pedidos
+          </button>
+          <button class="list-group-item list-group-item-action" data-seccion="usuarios">
+            <i class="bi-people-fill"></i> Usuarios
+          </button>
+          <button class="list-group-item list-group-item-action" data-seccion="municipios">
+            <i class="bi-geo-alt-fill"></i> Municipios
+          </button>
+          <button class="list-group-item list-group-item-action" data-seccion="departamentos">
+            <i class="bi-building"></i> Departamentos
+          </button>
+          <button class="list-group-item list-group-item-action" data-seccion="parametros">
+            <i class="bi bi-gear me-2"></i> Parámetros
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-9 col-lg-10" id="panelContenido"></div>
+    </div>
+  </main>
+
+  <footer class="text-center mt-3">
+    <small>© 2025 FoodGo - Panel del Administrador</small>
+  </footer>
+
+  <div class="modal fade" id="modalProducto" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="modalProductoTitle">Nuevo Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalProductoBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary" id="modalProductoBtn">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const panelContenido = document.getElementById("panelContenido");
+    const botones = document.querySelectorAll(".list-group-item");
+
+    const tiposProducto = [
+      { nombre: "Pizza" },
+      { nombre: "Hamburguesa" },
+      { nombre: "Bebidas" }
+    ];
+
+    botones.forEach(btn => {
+      btn.addEventListener("click", () => {
+        botones.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        mostrarSeccion(btn.dataset.seccion);
+      });
+    });
+
+    mostrarSeccion("productos"); 
+
+    // FUNCIONES PRINCIPALES 
+
+    async function mostrarSeccion(seccion) {
+      switch(seccion) {
+        case "productos":
+          panelContenido.innerHTML = `
+            <h4 class="fw-bold text-primary mb-3">Productos</h4>
+            <div class="table-responsive shadow-sm">
+              <table class="table table-striped align-middle text-center" id="tablaProductos">
+                <thead class="table-primary">
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Tipo Producto</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="5" class="text-muted">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn btn-success mt-3" onclick="abrirModalProducto('nuevo')">
+              <i class="bi bi-plus-circle me-1"></i> Nuevo Producto
+            </button>
+          `;
+          cargarProductos();
+          break;
+
+        case "repartidores":
+          panelContenido.innerHTML = `
+            <h4 class="fw-bold text-primary mb-3">Repartidores</h4>
+            <div class="table-responsive shadow-sm">
+              <table class="table table-striped align-middle text-center" id="tablaRepartidores">
+                <thead class="table-primary">
+                  <tr>
+                    <th>Cédula</th>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>ID Municipio</th>
+                    <th>ID Tienda</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="6" class="text-muted">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn btn-success mt-3" onclick="abrirModalRepartidor('nuevo')">
+              <i class="bi bi-plus-circle me-1"></i> Nuevo Repartidor
+            </button>
+          `;
+          cargarRepartidoresTabla();
+          break;
+
+        case "pedidos":
+          panelContenido.innerHTML = `
+            <h4 class="fw-bold text-primary mb-3">Pedidos Pendientes</h4>
+            <div class="table-responsive shadow-sm">
+              <table class="table table-striped align-middle text-center" id="tablaPedidos">
+                <thead class="table-primary">
+                  <tr>
+                    <th>ID Pedido</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Precio Total</th>
+                    <th>Tienda</th>
+                    <th>Repartidor</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="7" class="text-muted">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          `;
+          cargarPedidos();
+          break;
+
+          case "tiendas":
+            panelContenido.innerHTML = `
+              <h4 class="fw-bold text-primary mb-3">Tiendas</h4>
+              <div class="table-responsive shadow-sm">
+                <table class="table table-striped align-middle text-center" id="tablaTiendas">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>ID Tienda</th>
+                      <th>Nombre</th>
+                      <th>Dirección</th>
+                      <th>Teléfono</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td colspan="5" class="text-muted">Cargando...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn btn-success mt-3" onclick="abrirModalTienda('nuevo')">
+                <i class="bi bi-plus-circle me-1"></i> Nueva Tienda
+              </button>
+            `;
+          cargarTiendas();
+          break;
+
+        case "usuarios":
+          panelContenido.innerHTML = `
+            <div id="secUsuarios" class="seccion-admin">
+              <h3>Usuarios</h3>
+              <button class="btn btn-success mb-2" onclick="abrirModalUsuario('nuevo')">Nuevo Usuario</button>
+              <table class="table" id="tablaUsuarios">
+                <thead>
+                  <tr>
+                    <th>ID Cliente</th>
+                    <th>Usuario</th>
+                    <th>Estado</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          `;
+        cargarUsuarios();
+        break;
+
+        case "municipios":
+          panelContenido.innerHTML = `
+            <div id="secMunicipios" class="seccion-admin">
+              <h3 class="fw-bold text-success">Municipios</h3>
+              <button class="btn btn-success mb-2" onclick="abrirModalMunicipio('nuevo')">
+                <i class="bi bi-plus-lg"></i> Nuevo Municipio
+              </button>
+
+              <table class="table table-striped align-middle" id="tablaMunicipios">
+                <thead class="table-success">
+                  <tr>
+                    <th>ID Municipio</th>
+                    <th>Nombre</th>
+                    <th>Departamento</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <!-- Modal Municipio -->
+            <div class="modal fade" id="modalMunicipio" tabindex="-1" aria-labelledby="modalMunicipioLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalMunicipioLabel">Editar Municipio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="formMunicipio">
+                      <input type="hidden" id="idMunicipio">
+
+                      <div class="mb-3">
+                        <label for="nombreMunicipio" class="form-label">Nombre del Municipio</label>
+                        <input type="text" class="form-control" id="nombreMunicipio" required>
+                      </div>
+
+                      <div class="mb-3">
+                        <label for="selectDepartamento" class="form-label">Departamento</label>
+                        <select class="form-select" id="selectDepartamento" required>
+                          <option value="">Seleccione un departamento</option>
+                        </select>
+                      </div>
+
+                      <button type="submit" class="btn btn-primary w-100">Guardar</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          setTimeout(() => {
+            cargarMunicipiosAdmin();
+          }, 100);
+          break;
+
+        case "departamentos":
+          console.log("📌 Entrando a la sección DEPARTAMENTOS");
+
+          panelContenido.innerHTML = `
+            <div id="secDepartamentos" class="seccion-admin">
+              <h3>Departamentos</h3>
+              <button class="btn btn-success mb-2" onclick="abrirModalDepartamento('nuevo')">Nuevo Departamento</button>
+
+              <table class="table" id="tablaDepartamentos">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyDepartamentos">
+                  <!-- Se llena dinámicamente -->
+                </tbody>
+              </table>
+            </div>
+          `;
+
+          cargarDepartamentos();
+          break;
+
+
+        case "parametros":
+          panelContenido.innerHTML = `
+            <div class="card shadow-sm p-4">
+              <h5 class="fw-bold mb-3"><i class="bi bi-gear-fill me-2"></i>Parámetros Generales</h5>
+              <form id="formParametros">
+                <div class="mb-3">
+                  <label class="form-label">Costo de Envío Base ($)</label>
+                  <input type="number" class="form-control" id="costoEnvio" value="5000">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Tiempo Promedio de Entrega (minutos)</label>
+                  <input type="number" class="form-control" id="tiempoEntrega" value="30">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="guardarParametros()">
+                  <i class="bi bi-save me-1"></i>Guardar cambios
+                </button>
+              </form>
+            </div>
+          `;
+          break;
+      }
+    }
+
+    function guardarParametros() {
+      const costo = document.getElementById("costoEnvio").value;
+      const tiempo = document.getElementById("tiempoEntrega").value;
+      alert(`Parámetros guardados:\nCosto: $${costo}\nTiempo promedio: ${tiempo} min ✅`);
+    }
+
+    // CARGAR USUARIOS
+    async function cargarUsuarios() {
+      const tbody = document.querySelector("#tablaUsuarios tbody");
+      tbody.innerHTML = "";
+
+      try {
+        const res = await fetch("/api/usuarios");
+        const usuarios = await res.json();
+
+        usuarios.forEach(u => {
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${u.id_cliente}</td>
+            <td>${u.usuario}</td>
+            <td>${u.activo ? "Activo ✅" : "Inactivo ❌"}</td>
+            <td>${u.rol}</td>
+            <td>
+              <button class="btn btn-warning btn-sm" onclick="abrirModalUsuario('editar','${u.id_cliente}','${u.usuario}',${u.activo},${u.id_rol})">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="eliminarUsuario('${u.id_cliente}')">Eliminar</button>
+            </td>
+          `;
+          tbody.appendChild(fila);
+        });
+      } catch (err) {
+        console.error("❌ Error cargando usuarios:", err);
+        tbody.innerHTML = `<tr><td colspan="5" class="text-danger">Error cargando usuarios</td></tr>`;
+      }
+    }
+
+    async function abrirModalUsuario(tipo, id="", usuario="", activo=true, idRol="") {
+      const modalExiste = document.getElementById("modalUsuario");
+      if(modalExiste) modalExiste.remove();
+
+      const modal = `
+      <div class="modal fade" id="modalUsuario" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title">${tipo === "nuevo" ? "Crear Usuario" : "Editar Usuario"}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+
+              <label>ID Cliente</label>
+              <input class="form-control mb-2" id="uID" value="${id}" ${tipo==="editar"?"readonly":""}>
+
+              <label>Usuario</label>
+              <input class="form-control mb-2" id="uUsuario" value="${usuario}">
+
+              <label>Contraseña (solo si desea cambiarla)</label>
+              <input class="form-control mb-2" id="uPass" placeholder="••••••">
+
+              <label>Rol</label>
+              <select class="form-control mb-2" id="uRol">
+                <option value="1" ${idRol==1?"selected":""}>Administrador</option>
+                <option value="2" ${idRol==2?"selected":""}>Repartidor</option>
+                <option value="3" ${idRol==3?"selected":""}>Cliente</option>
+              </select>
+
+              <label>Estado</label>
+              <select class="form-control mb-2" id="uActivo">
+                <option value="true" ${activo?"selected":""}>Activo</option>
+                <option value="false" ${!activo?"selected":""}>Inactivo</option>
+              </select>
+
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button class="btn btn-primary" id="btnGuardarUsuario">${tipo==="nuevo"?"Crear":"Actualizar"}</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+      document.body.insertAdjacentHTML("beforeend", modal);
+      const bootstrapModal = new bootstrap.Modal(document.getElementById("modalUsuario"));
+
+      document.getElementById("btnGuardarUsuario").onclick = () => guardarUsuario(tipo);
+      bootstrapModal.show();
+    }
+
+    async function guardarUsuario(tipo) {
+      const ID_Cliente = document.getElementById("uID").value;
+      const Usuario = document.getElementById("uUsuario").value;
+      const Contrasena = document.getElementById("uPass").value;
+      const ID_Rol = document.getElementById("uRol").value;
+      const Activo = document.getElementById("uActivo").value === "true";
+
+      let url = "/api/usuarios";
+      let method = "POST";
+
+      if(tipo === "editar") {
+        url = `/api/usuarios/${ID_Cliente}`;
+        method = "PUT";
+      }
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ID_Cliente, Usuario, Contrasena, ID_Rol, Activo })
+      });
+
+      const data = await res.json();
+      alert(data.message);
+
+      bootstrap.Modal.getInstance(document.getElementById("modalUsuario")).hide();
+      document.getElementById("modalUsuario").remove();
+      cargarUsuarios();
+    }
+
+    async function eliminarUsuario(id) {
+      if(!confirm("¿Eliminar este usuario?")) return;
+
+      const req = await fetch(`/api/usuarios/${id}`, { method:"DELETE" });
+      const res = await req.json();
+      alert(res.message);
+      cargarUsuarios();
+    }
+
+      // ---------- MUNICIPIOS ----------
+    async function cargarMunicipios() {
+  try {
+    const res = await fetch("/api/municipios");
+    const data = await res.json();
+
+    const tbody = document.getElementById("tbodyMunicipios");
+    if (!tbody) {
+      console.error("❌ No se encontró el tbodyMunicipios en el DOM");
+      return;
+    }
+
+    tbody.innerHTML = ""; 
+
+    if (data.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center text-muted">No hay municipios registrados</td>
+        </tr>`;
+      return;
+    }
+
+    data.forEach(m => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${m.id_municipio}</td>
+          <td>${m.nombre}</td>
+          <td>${m.departamento || "Sin departamento"}</td>
+          <td>
+            <button class="btn btn-warning btn-sm me-2"
+              onclick="abrirModalMunicipio('editar', ${m.id_municipio}, '${m.nombre}', '${m.id_departamento}')">
+              ✏️ Editar
+            </button>
+            <button class="btn btn-danger btn-sm"
+              onclick="eliminarMunicipio(${m.id_municipio})">
+              🗑️ Eliminar
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error("❌ Error cargando municipios:", err);
+  }
+}
+
+  async function abrirModalMunicipio(modo, id = null, nombre = "", departamentoNombre = "") {
+  const modal = new bootstrap.Modal(document.getElementById("modalMunicipio"));
+  document.getElementById("formMunicipio").reset();
+
+  document.getElementById("idMunicipio").value = id || "";
+  document.getElementById("nombreMunicipio").value = nombre;
+
+  await cargarDepartamentosSelect();
+
+  if (modo === "editar" && departamentoNombre) {
+    const select = document.getElementById("selectDepartamento");
+    const option = Array.from(select.options).find(opt => opt.text === departamentoNombre);
+    if (option) select.value = option.value;
+
+    document.getElementById("modalMunicipioLabel").textContent = "Editar Municipio";
+  } else {
+    document.getElementById("modalMunicipioLabel").textContent = "Nuevo Municipio";
+  }
+
+  modal.show();
+}
+
+  async function eliminarMunicipio(id) {
+  if (!confirm("¿Deseas eliminar este municipio?")) return;
+
+  const res = await fetch(`/api/municipios/${id}`, { method: "DELETE" });
+
+  if (res.ok) {
+    alert("🗑️ Municipio eliminado correctamente");
+    cargarMunicipiosAdmin();
+  } else {
+    alert("❌ Error eliminando municipio");
+  }
+}
+
+  function cerrarModal() {
+    const modal = document.querySelector(".modal");
+    if (modal) modal.remove();
+  }
+
+async function cargarDepartamentos() {
+  console.log("📌 Ejecutando cargarDepartamentos()");
+
+  const tbody = document.getElementById("tbodyDepartamentos");
+
+  if (!tbody) {
+    console.error("❌ ERROR: No existe <tbody id='tbodyDepartamentos'> en el DOM");
+    return;
+  }
+
+  console.log("✅ tbodyDepartamentos ENCONTRADO");
+
+  try {
+    const res = await fetch("/api/departamentos");
+    const departamentos = await res.json();
+
+    console.log("📌 Datos recibidos desde /api/departamentos:", departamentos);
+
+    tbody.innerHTML = "";
+
+    tbody.innerHTML += `
+      <tr><td colspan="3" class="text-success">✔ Cargando departamentos...</td></tr>
+    `;
+
+    if (!departamentos || departamentos.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="3" class="text-muted">No hay departamentos registrados</td></tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = ""; 
+
+    departamentos.forEach(dep => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${dep.id_departamento}</td>
+          <td>${dep.nombre}</td>
+          <td>
+            <button class="btn btn-warning btn-sm" onclick="abrirModalDepartamento('editar', ${dep.id_departamento}, '${dep.nombre}')">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarDepartamento(${dep.id_departamento})">Eliminar</button>
+          </td>
+        </tr>
+      `;
+    });
+
+  } catch (err) {
+    console.error("❌ Error en cargarDepartamentos:", err);
+  }
+}
+
+function nuevoDepartamento() {
+  document.getElementById("tituloModalDepto").innerText = "Nuevo Departamento";
+  document.getElementById("idDepartamento").value = "";
+  document.getElementById("nombreDepartamento").value = "";
+}
+
+function editarDepartamento(id, nombre) {
+  document.getElementById("tituloModalDepto").innerText = "Editar Departamento";
+  document.getElementById("idDepartamento").value = id;
+  document.getElementById("nombreDepartamento").value = nombre;
+
+  let modal = new bootstrap.Modal(document.getElementById("modalDepartamento"));
+  modal.show();
+}
+
+async function guardarDepartamento() {
+  const id = document.getElementById("idDepartamento").value;
+  const nombre = document.getElementById("nombreDepartamento").value;
+
+  if (nombre.trim() === "") {
+    alert("⚠️ El nombre es obligatorio.");
+    return;
+  }
+
+  const url = id ? `/api/departamentos/${id}` : "/api/departamentos";
+  const method = id ? "PUT" : "POST";
+
+  try {
+    const res = await fetch(url, {
+      method: method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre })
+    });
+
+    if (!res.ok) throw new Error("Error al guardar");
+
+    bootstrap.Modal.getInstance(document.getElementById("modalDepartamento")).hide();
+
+    cargarDepartamentos();
+  } catch (err) {
+    console.error("❌ Error al guardar departamento:", err);
+  }
+}
+async function eliminarDepartamento(id) {
+  if (!confirm("¿Seguro que deseas eliminar este departamento?")) return;
+
+  try {
+    const res = await fetch(`/api/departamentos/${id}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) throw new Error("Error al eliminar");
+
+    cargarDepartamentos();
+  } catch (err) {
+    console.error("❌ Error al eliminar:", err);
+  }
+}
+
+function abrirModalDepartamento(accion, id = null, nombre = "") {
+  const nuevoNombre = prompt("Ingrese el nombre del departamento:", nombre);
+  if (!nuevoNombre) return;
+
+  if (accion === "nuevo") {
+    fetch("/api/departamentos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre: nuevoNombre })
+    }).then(() => cargarDepartamentos());
+
+  } else if (accion === "editar") {
+    fetch(`/api/departamentos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre: nuevoNombre })
+    }).then(() => cargarDepartamentos());
+  }
+}
+
+  async function guardarMunicipio() {
+    const nombre = document.getElementById("nombreMunicipio").value.trim();
+    const id_departamento = document.getElementById("departamentoMunicipio").value;
+    if (!nombre || !id_departamento) return alert("Complete todos los campos");
+
+    await fetch("/api/municipios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, id_departamento })
+    });
+    cerrarModal();
+    cargarMunicipios();
+  }
+
+  async function actualizarMunicipio(id) {
+    const nombre = document.getElementById("nombreMunicipio").value.trim();
+    const id_departamento = document.getElementById("departamentoMunicipio").value;
+    if (!nombre || !id_departamento) return alert("Complete todos los campos");
+
+    await fetch(`/api/municipios/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, id_departamento })
+    });
+    cerrarModal();
+    cargarMunicipios();
+  }
+
+  //  DEPARTAMENTOS 
+
+  async function cargarDepartamentos() {
+  try {
+    const res = await fetch("http://localhost:3000/api/departamentos");
+    const data = await res.json();
+
+    const tbody = document.getElementById("tablaDepartamentos");
+    tbody.innerHTML = "";
+
+    data.forEach(dep => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${dep.id_departamento}</td>
+          <td>${dep.nombre}</td>
+          <td>
+            <button class="btn btn-warning btn-sm" onclick="abrirModalDepartamento('editar', ${dep.id_departamento}, '${dep.nombre}')">
+              ✏️ Editar
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarDepartamento(${dep.id_departamento})">
+              🗑️ Eliminar
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error("Error cargando departamentos:", err);
+  }
+}
+
+function abrirModalDepartamento(accion, id = null, nombre = "") {
+  const nuevoNombre = prompt(
+    accion === "nuevo" ? "Ingrese el nombre del nuevo departamento:" : "Editar nombre del departamento:",
+    nombre
+  );
+
+  if (!nuevoNombre) return;
+
+  if (accion === "nuevo") {
+    fetch("/api/departamentos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre: nuevoNombre })
+    }).then(() => cargarDepartamentos());
+  } else {
+    fetch(`/api/departamentos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre: nuevoNombre })
+    }).then(() => cargarDepartamentos());
+  }
+}
+
+async function eliminarDepartamento(id) {
+  if (!confirm("¿Seguro que deseas eliminar este departamento?")) return;
+  await fetch(`/api/departamentos/${id}`, { method: "DELETE" });
+  cargarDepartamentos();
+}
+
+
+    //  PRODUCTOS 
+    async function cargarProductos() {
+      const tbody = document.querySelector("#tablaProductos tbody");
+      try {
+        const res = await fetch("/api/productos");
+        const productos = await res.json();
+
+        if (!productos.length) {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-muted">No hay productos</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = productos.map(p => `
+          <tr>
+            <td>${p.id_producto}</td>
+            <td>${p.nombre}</td>
+            <td>${p.tipo || "Pizza"}</td>
+            <td>${p.precio}</td>
+            <td>
+              <button class="btn btn-warning btn-sm btn-editar" data-id="${p.id_producto}">Editar</button>
+              <button class="btn btn-danger btn-sm btn-eliminar" data-id="${p.id_producto}">Eliminar</button>
+            </td>
+          </tr>
+        `).join("");
+
+        document.querySelectorAll(".btn-editar").forEach(btn => {
+          btn.addEventListener("click", () => abrirModalProducto("editar", btn.dataset.id));
+        });
+        document.querySelectorAll(".btn-eliminar").forEach(btn => {
+          btn.addEventListener("click", () => eliminarProducto(btn.dataset.id));
+        });
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="5" class="text-danger">Error cargando productos</td></tr>`;
+      }
+    }
+
+    function abrirModalProducto(tipo, id=null) {
+      const modalBody = document.getElementById("modalProductoBody");
+      const titulo = document.getElementById("modalProductoTitle");
+      const boton = document.getElementById("modalProductoBtn");
+
+      let producto = {};
+      if (tipo === "editar") {
+        fetch("/api/productos")
+          .then(res => res.json())
+          .then(productos => {
+            producto = productos.find(p => p.id_producto == id) || {};
+            mostrarModalProducto();
+          }).catch(err => { console.error(err); alert("No se pudo cargar el producto"); });
+      } else {
+        mostrarModalProducto();
+      }
+
+      function mostrarModalProducto() {
+        titulo.textContent = tipo === "nuevo" ? "Nuevo Producto" : "Editar Producto";
+        boton.textContent = tipo === "nuevo" ? "Crear" : "Actualizar";
+
+        modalBody.innerHTML = `
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" id="productoNombre" class="form-control" value="${producto.nombre || ''}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tipo Producto</label>
+            <select id="productoTipo" class="form-select">
+              ${tiposProducto.map(t => `<option value="${t.nombre}" ${producto.tipo === t.nombre ? "selected" : ""}>${t.nombre}</option>`).join("")}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Precio</label>
+            <input type="number" id="productoPrecio" class="form-control" value="${producto.precio || ''}">
+          </div>
+        `;
+
+        boton.onclick = () => {
+          const nombre = document.getElementById("productoNombre").value;
+          const tipoProd = document.getElementById("productoTipo").value;
+          const precio = document.getElementById("productoPrecio").value;
+          if (tipo === "nuevo") crearProducto(nombre, tipoProd, precio);
+          else editarProducto(id, nombre, tipoProd, precio);
+        };
+
+        new bootstrap.Modal(document.getElementById("modalProducto")).show();
+      }
+    }
+
+    async function crearProducto(nombre, tipo, precio){
+      try{
+        const res = await fetch("/api/productos", {
+          method:"POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({nombre, tipo, precio})
+        });
+        const data = await res.json();
+        if(data.success){
+          alert("✅ Producto creado");
+          cargarProductos();
+          bootstrap.Modal.getInstance(document.getElementById("modalProducto")).hide();
+        } else alert("❌ Error creando producto");
+      } catch(err){ console.error(err);}
+    }
+
+    async function editarProducto(id, nombre, tipo, precio){
+      try{
+        const res = await fetch(`/api/productos/${id}`, {
+          method:"PUT",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({nombre, tipo, precio})
+        });
+        const data = await res.json();
+        if(data.success){
+          alert("✅ Producto actualizado");
+          cargarProductos();
+          bootstrap.Modal.getInstance(document.getElementById("modalProducto")).hide();
+        } else alert("❌ Error actualizando producto");
+      } catch(err){ console.error(err);}
+    }
+
+    async function eliminarProducto(id){
+      if(!confirm("¿Desea eliminar este producto?")) return;
+      try{
+        const res = await fetch(`/api/productos/${id}`, { method:"DELETE" });
+        const data = await res.json();
+        if(data.success){
+          alert("✅ Producto eliminado");
+          cargarProductos();
+        } else alert("❌ Error eliminando producto");
+      } catch(err){ console.error(err);}
+    }
+
+    //  REPARTIDORES 
+  async function cargarRepartidoresTabla() {
+  const tbody = document.querySelector("#tablaRepartidores tbody");
+  tbody.innerHTML = "";
+  try {
+    const res = await fetch("/api/repartidores");
+    const repartidores = await res.json();
+
+    if (!repartidores.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-muted">No hay repartidores</td></tr>`;
+      return;
+    }
+
+    repartidores.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.cedula}</td>
+        <td>${r.nombre_completo}</td>
+        <td>${r.telefono}</td>
+        <td>${r.id_municipio}</td>
+        <td>${r.id_tienda}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" onclick="abrirModalRepartidor('editar', '${r.cedula}', '${r.nombre_completo}', '${r.telefono}', ${r.id_municipio}, ${r.id_tienda})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarRepartidor('${r.cedula}')">Eliminar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(err){ console.error(err);}
+}
+
+//  VARIABLES GLOBALES 
+let departamentos = [];
+let municipios = [];
+
+//  MUNICIPIOS 
+async function cargarDepartamentos() {
+  try {
+    const res = await fetch("/departamentos");
+    departamentos = await res.json();
+  } catch(err) {
+    console.error("Error cargando departamentos:", err);
+    departamentos = [];
+  }
+}
+
+  async function cargarMunicipios(idDepartamento) {
+    try {
+      if (!idDepartamento) {
+        municipios = [];
+        return;
+      }
+      const res = await fetch(`/api/municipios/${idDepartamento}`);
+      municipios = await res.json();
+    } catch (err) {
+      console.error("Error cargando municipios:", err);
+      municipios = [];
+    }
+  }
+
+ async function cargarMunicipiosAdmin() {
+  try {
+    const res = await fetch("/api/municipios");
+    if (!res.ok) throw new Error("Error al obtener municipios");
+    const municipios = await res.json();
+
+    const tbody = document.querySelector("#tablaMunicipios tbody");
+    tbody.innerHTML = "";
+
+    municipios.forEach(m => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${m.id_municipio}</td>
+          <td>${m.nombre}</td>
+          <td>${m.departamento}</td>
+          <td>
+            <button class="btn btn-warning btn-sm" onclick="abrirModalMunicipio('editar', ${m.id_municipio}, '${m.nombre}', '${m.departamento}')">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarMunicipio(${m.id_municipio})">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    console.log("✅ Municipios cargados:", municipios);
+  } catch (err) {
+    console.error("❌ Error cargando municipios:", err);
+  }
+}
+
+
+function abrirModalEditarMunicipio(id, nombre, departamento) {
+  document.getElementById("idMunicipio").value = id;
+  document.getElementById("nombreMunicipio").value = nombre;
+  document.getElementById("idDepartamento").value = ""; 
+
+  const modal = new bootstrap.Modal(document.getElementById("modalMunicipio"));
+  modal.show();
+}
+document.addEventListener("submit", async (e) => {
+  if (e.target.id === "formMunicipio") {
+    e.preventDefault();
+
+    const id = document.getElementById("idMunicipio").value;
+    const nombre = document.getElementById("nombreMunicipio").value;
+    const id_departamento = document.getElementById("selectDepartamento").value;
+
+    const metodo = id ? "PUT" : "POST";
+    const url = id ? `/api/municipios/${id}` : `/api/municipios`;
+
+    const res = await fetch(url, {
+      method: metodo,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, id_departamento })
+    });
+
+    if (res.ok) {
+      alert("✅ Municipio guardado correctamente");
+      bootstrap.Modal.getInstance(document.getElementById("modalMunicipio")).hide();
+      cargarMunicipiosAdmin();
+    } else {
+      alert("❌ Error al guardar el municipio");
+    }
+  }
+});
+
+async function editarMunicipio(id) {
+  const nuevoNombre = prompt("Ingrese el nuevo nombre del municipio:");
+  if (!nuevoNombre) return;
+
+  const nuevoDepto = prompt("Ingrese el nuevo ID del departamento:");
+  if (!nuevoDepto) return;
+
+  const res = await fetch(`/api/municipios/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre: nuevoNombre, id_departamento: nuevoDepto })
+  });
+
+  if (res.ok) {
+    alert("Municipio actualizado correctamente");
+    cargarMunicipiosAdmin();
+  } else {
+    alert("Error actualizando municipio");
+  }
+}
+
+//  REPARTIDORES 
+async function cargarRepartidoresTabla() {
+  const tbody = document.querySelector("#tablaRepartidores tbody");
+  tbody.innerHTML = "";
+
+  try {
+    const res = await fetch("/api/repartidores");
+    const repartidores = await res.json();
+
+    if (!repartidores.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-muted">No hay repartidores</td></tr>`;
+      return;
+    }
+
+    repartidores.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.cedula}</td>
+        <td>${r.nombre_completo}</td>
+        <td>${r.telefono}</td>
+        <td>${r.id_municipio}</td>
+        <td>${r.id_tienda}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" onclick="abrirModalRepartidor('editar', '${r.cedula}', '${r.nombre_completo}', '${r.telefono}', ${r.id_municipio}, ${r.id_tienda})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarRepartidor('${r.cedula}')">Eliminar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(err) {
+    console.error("Error cargando repartidores:", err);
+    tbody.innerHTML = `<tr><td colspan="6" class="text-danger">Error cargando repartidores</td></tr>`;
+  }
+}
+
+async function abrirModalRepartidor(tipo, cedula="", nombre="", telefono="", idDepartamento="", idMunicipio="", idTienda="") {
+  await cargarDepartamentos();
+  if(idDepartamento) await cargarMunicipios(idDepartamento);
+
+  const modalExistente = document.getElementById("modalRepartidor");
+  if(modalExistente) modalExistente.remove();
+
+  const optionsDepartamentos = departamentos.map(d =>
+    `<option value="${d.id_departamento}" ${d.id_departamento==idDepartamento?'selected':''}>${d.nombre}</option>`
+  ).join("");
+
+  const optionsMunicipios = municipios.map(m =>
+    `<option value="${m.id_municipio}" ${m.id_municipio==idMunicipio?'selected':''}>${m.nombre}</option>`
+  ).join("");
+
+  let tiendas = [];
+  if(idMunicipio) {
+    const resTiendas = await fetch(`/api/tiendas/municipio/${idMunicipio}`);
+    tiendas = await resTiendas.json();
+  }
+  const optionsTiendas = tiendas.map(t =>
+    `<option value="${t.id_tienda}" ${t.id_tienda==idTienda?'selected':''}>${t.nombre}</option>`
+  ).join("");
+
+  const modalHTML = `
+    <div class="modal fade" id="modalRepartidor" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">${tipo==='nuevo'?'Nuevo Repartidor':'Editar Repartidor'}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Cédula</label>
+              <input type="text" id="repartidorCedula" class="form-control" value="${cedula}" ${tipo==='editar'?'readonly':''}>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nombre Completo</label>
+              <input type="text" id="repartidorNombre" class="form-control" value="${nombre}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Teléfono</label>
+              <input type="text" id="repartidorTelefono" class="form-control" value="${telefono}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Departamento</label>
+              <select id="repartidorDepartamento" class="form-select">
+                <option value="">--Seleccionar--</option>
+                ${optionsDepartamentos}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Municipio</label>
+              <select id="repartidorMunicipio" class="form-select">
+                <option value="">--Seleccionar--</option>
+                ${optionsMunicipios}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tienda</label>
+              <select id="repartidorTienda" class="form-select">
+                <option value="">--Seleccionar--</option>
+                ${optionsTiendas}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button class="btn btn-primary" id="modalRepartidorBtn">${tipo==='nuevo'?'Crear':'Actualizar'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+  const selectDepartamento = document.getElementById("repartidorDepartamento");
+  const selectMunicipio = document.getElementById("repartidorMunicipio");
+  const selectTienda = document.getElementById("repartidorTienda");
+
+  selectDepartamento.onchange = async () => {
+    await cargarMunicipios(selectDepartamento.value);
+    selectMunicipio.innerHTML = `<option value="">--Seleccionar--</option>` +
+      municipios.map(m => `<option value="${m.id_municipio}">${m.nombre}</option>`).join("");
+    selectTienda.innerHTML = `<option value="">--Seleccionar--</option>`;
+  };
+
+  selectMunicipio.onchange = async () => {
+    let tiendas = [];
+    if(selectMunicipio.value){
+      const res = await fetch(`/api/tiendas/municipio/${selectMunicipio.value}`);
+      tiendas = await res.json();
+    }
+    selectTienda.innerHTML = `<option value="">--Seleccionar--</option>` +
+      tiendas.map(t => `<option value="${t.id_tienda}">${t.nombre}</option>`).join("");
+  };
+
+  const modal = new bootstrap.Modal(document.getElementById("modalRepartidor"));
+  document.getElementById("modalRepartidorBtn").addEventListener("click", async () => {
+  await guardarRepartidor(tipo);
+});
+  modal.show();
+}
+
+async function guardarRepartidor(tipo) {
+  const cedula = document.getElementById("repartidorCedula").value;
+  const nombre = document.getElementById("repartidorNombre").value;
+  const telefono = document.getElementById("repartidorTelefono").value;
+  const idMunicipio = parseInt(document.getElementById("repartidorMunicipio").value);
+  const idTienda = parseInt(document.getElementById("repartidorTienda").value);
+
+  let url = "/api/repartidores";
+  let method = "POST";
+  if(tipo==='editar'){
+    url = `/api/repartidores/${cedula}`;
+    method = "PUT";
+  }
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        cedula,
+        nombre_completo: nombre,
+        telefono,
+        id_municipio: idMunicipio,
+        id_tienda: idTienda
+      })
+
+    });
+    const data = await res.json();
+    if(data.success){
+      alert("✅ Repartidor guardado correctamente");
+      bootstrap.Modal.getInstance(document.getElementById("modalRepartidor")).hide();
+      document.getElementById("modalRepartidor").remove();
+      await cargarRepartidoresTabla();
+      alert("✅ Repartidor guardado correctamente");
+    } else alert("❌ Error al guardar repartidor");
+  } catch(err){ console.error(err); }
+}
+
+async function eliminarRepartidor(cedula) {
+  if(!confirm("¿Desea eliminar este repartidor?")) return;
+  try {
+    const res = await fetch(`/api/repartidores/${cedula}`, { method:"DELETE" });
+    const data = await res.json();
+    if(data.success){ alert("✅ Repartidor eliminado"); cargarRepartidoresTabla(); }
+    else alert("❌ Error eliminando repartidor");
+  } catch(err){ console.error(err); }
+}
+
+//  PEDIDOS 
+async function cargarPedidos() {
+  const tbody = document.querySelector("#tablaPedidos tbody");
+  tbody.innerHTML = "";
+  try {
+    const res = await fetch("/api/pedidos/pendientes");
+    const pedidos = await res.json();
+
+    if(!pedidos.length){
+      tbody.innerHTML = `<tr><td colspan="7" class="text-muted">No hay pedidos pendientes</td></tr>`;
+      return;
+    }
+
+    for(const p of pedidos){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${p.id_pedido}</td>
+        <td>${p.fecha_entrega}</td>
+        <td>${p.hora_entrega}</td>
+        <td>$${p.precio_total}</td>
+        <td>${p.nombre_tienda}</td>
+        <td>
+          <select class="form-select form-select-sm" id="repartidor-${p.id_pedido}">
+            <option value="">--Seleccionar--</option>
+          </select>
+        </td>
+        <td>
+          <button class="btn btn-success btn-sm" onclick="asignarRepartidor(${p.id_pedido})">Asignar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      cargarRepartidoresSelect(p.id_pedido);
+    }
+
+  } catch(err) { console.error(err); }
+}
+
+async function cargarRepartidoresSelect(idPedido){
+  try{
+    const res = await fetch("/api/repartidores");
+    const repartidores = await res.json();
+    const select = document.getElementById(`repartidor-${idPedido}`);
+    repartidores.forEach(r=>{
+      const opt=document.createElement("option");
+      opt.value=r.cedula; opt.textContent=r.nombre_completo;
+      select.appendChild(opt);
+    });
+  } catch(err){ console.error(err); }
+}
+
+async function asignarRepartidor(idPedido){
+  const select = document.getElementById(`repartidor-${idPedido}`);
+  const id_repartidor = select.value;
+  if(!id_repartidor){ alert("Seleccione un repartidor"); return; }
+
+  try {
+    const res = await fetch("/api/pedidos/asignar", {
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({id_pedido:idPedido, id_repartidor})
+    });
+    const data = await res.json();
+    if(data.success){ alert("✅ Repartidor asignado"); cargarPedidos(); }
+    else alert("❌ Error asignando repartidor");
+  } catch(err){ console.error(err); }
+}
+
+//  TIENDAS 
+async function cargarTiendas() {
+  const tbody = document.querySelector("#tablaTiendas tbody");
+  tbody.innerHTML = "";
+  try {
+    const res = await fetch("/api/tiendas");
+    const tiendas = await res.json();
+
+    if(!tiendas.length){
+      tbody.innerHTML=`<tr><td colspan="5" class="text-muted">No hay tiendas</td></tr>`;
+      return;
+    }
+
+    tiendas.forEach(t=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td>${t.id_tienda}</td>
+        <td>${t.nombre}</td>
+        <td>${t.direccion}</td>
+        <td>${t.id_municipio}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" onclick="abrirModalTienda('editar', ${t.id_tienda}, '${t.nombre}', '${t.direccion}', ${t.id_municipio})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarTienda(${t.id_tienda})">Eliminar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(err){ console.error(err); }
+}
+
+async function guardarTienda(tipo, idTienda=null){
+  const nombre = document.getElementById("tiendaNombre").value;
+  const direccion = document.getElementById("tiendaDireccion").value;
+  const idMunicipio = parseInt(document.getElementById("tiendaMunicipio").value);
+
+  let url="/api/tiendas";
+  let method="POST";
+  if(tipo==='editar'){ url=`/api/tiendas/${idTienda}`; method="PUT"; }
+
+  try{
+    const res = await fetch(url,{
+      method,
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ nombre, direccion, id_municipio:idMunicipio })
+    });
+    const data = await res.json();
+    if(data.success){
+      alert("✅ Tienda guardada correctamente");
+      bootstrap.Modal.getInstance(document.getElementById("modalTienda")).hide();
+      document.getElementById("modalTienda").remove();
+      cargarTiendas();
+    } else alert("❌ Error guardando tienda");
+  } catch(err){ console.error(err); }
+}
+
+async function eliminarTienda(idTienda){
+  if(!confirm("¿Desea eliminar esta tienda?")) return;
+  try{
+    const res = await fetch(`/api/tiendas/${idTienda}`, { method:"DELETE" });
+    const data = await res.json();
+    if(data.success){ alert("✅ Tienda eliminada"); cargarTiendas(); }
+    else alert("❌ Error eliminando tienda");
+  } catch(err){ console.error(err); }
+}
+  </script>
+</body>
+</html>

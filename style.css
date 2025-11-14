@@ -1,0 +1,174 @@
+    /* =========================
+   PÁGINA DE INICIO
+   ========================= */
+  
+
+  .hero {
+    background-color: #00ca3d; 
+    min-height: 60vh; 
+    padding: 4rem 1rem;
+  }
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+  .input-group .form-control {
+    border-left: none;
+  }
+  .input-group-text {
+    border-right: none;
+  }
+
+  .logo-redondo {
+  width: 120px;       
+  height: 120px;
+  border-radius: 50%; 
+  object-fit: cover;  
+  object-position: center; 
+}
+
+.logo-navbar {
+  height: 50px;
+  width: auto;
+}
+
+  /* =========================
+   PÁGINA DE LOGIN
+   ========================= */
+
+.login-container {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-card {
+      max-width: 400px;
+      width: 100%;
+      border-radius: 12px;
+      padding: 2rem;
+      background: #fff;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-card .form-label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .login-card .form-control {
+      border-radius: 8px;
+    }
+
+    .btn-login {
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    /* =========================
+       PÁGINA DE REGISTRO
+       ========================= */
+
+    /* Page wrapper that centers the card similarly to the login page */
+    .register-page {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    /* Card containing the registration form */
+    .register-card {
+      max-width: 450px;
+      width: 100%;
+      padding: 30px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .register-card h3 {
+      color: #198754;
+      font-weight: bold;
+    }
+
+    .register-card .form-label {
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .register-card .form-control {
+      border-radius: 6px;
+    }
+
+    .register-card .btn-success {
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .register-card p {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+/* =========================
+   PÁGINA DE PEDIDOS
+   ========================= */
+.orders-container { padding-bottom: 4rem; }
+
+.menu .card-menu { border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.menu .object-fit-cover { object-fit: cover; height: 100%; }
+
+.cart-sidebar { max-width: 100%; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+.cart-item { border-bottom: 1px dashed #eee; padding-bottom: 0.5rem; }
+
+@media (max-width: 991px) {
+  .cart-sidebar { position: static; }
+  .logo-redondo { width: 70px; height: 70px; }
+}
+
+/* =========================
+   PROMOCIONES
+   ========================= */
+.promo-card { border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+#promotionsContainer { display: flex; gap: 1rem; flex-wrap: wrap; }
+#activePromoLabel { font-size: 0.95rem; }
+
+/* =========================
+   Repartidor
+   Administrador
+   ========================= */
+
+        body {
+      background-color: #f8f9fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background-color: #198754;
+      color: white;
+      padding: 1rem 2rem;
+    }
+    .table-container {
+      flex: 1;
+      padding: 2rem;
+      margin-top: 1.5rem;
+    }
+    footer {
+      background-color: #212529;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+    .btn-estado {
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+    }
+    .btn-aceptar { background-color: #0d6efd; }
+    .btn-entregado { background-color: #198754; }
+    .btn-completado { background-color: #6c757d; cursor: default; }
